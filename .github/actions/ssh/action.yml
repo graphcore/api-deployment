@@ -1,0 +1,25 @@
+# Copyright (c) 2023 Graphcore Ltd. All rights reserved.
+name: "Create ssh key"
+description: "Action to make ssh key from variables"
+inputs:
+  host-ip:
+    description: "Remote host IP address"
+    required: true
+  ssh-key:
+    description: "ssh private key - stored in a variable"
+    required: true
+outputs:
+  key-path:
+    description: "Path to the private ssh key file"
+    value: ${{ steps.create-key.outputs.key-path }}
+runs:
+  using: "composite"
+  steps:
+    - id: create-key
+      run: |
+        mkdir -p ~/.ssh/
+        ssh-keyscan -H "${{ inputs.host-ip }}" >> ~/.ssh/known_hosts
+        echo "${{ inputs.ssh-key }}" > ../private.key
+        sudo chmod 600 ../private.key
+        echo "key-path=${{ github.workspace }}/../private.key" >> $GITHUB_OUTPUT
+      shell: bash

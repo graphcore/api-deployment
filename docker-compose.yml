@@ -1,0 +1,22 @@
+# Copyright (c) 2022 Graphcore Ltd. All rights reserved.
+version: "3.5"
+services:
+    models:
+      container_name: ${COMPOSE_PROJECT_NAME}
+      build:
+        context: ./
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      environment:
+        - IPUOF_VIPU_API_HOST=${IPUOF_VIPU_API_HOST}
+        - IPUOF_VIPU_API_PARTITION_ID=${IPUOF_VIPU_API_PARTITION_ID}
+      restart: on-failure
+      cap_add:
+        - IPC_LOCK
+      network_mode: "host"
+      ipc: host
+      devices:
+        - /dev/infiniband/
+      ports:
+        - "${SERVER_PORT}:${SERVER_PORT}"

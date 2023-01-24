@@ -1,0 +1,26 @@
+# Copyright (c) 2023 Graphcore Ltd. All rights reserved.
+name: Stop
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: one-click-deployment
+
+jobs:
+  stop:
+    environment: GCore-deployment-demo
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3 # Necessary to access local action
+      - id: create-ssh-key
+        uses: ./.github/actions/ssh
+        with:
+          host-ip: ${{ secrets.HOST_IP }}
+          ssh-key: ${{ secrets.SSH_KEY }}
+      - name: Stop remote server
+        env:
+          SSH_KEY_PATH: ${{ steps.create-ssh-key.outputs.key-path}}
+        run: |
+          echo "Stopping the remote container..."
+          ssh -i $SSH_KEY_PATH ${{ secrets.USER }}@${{ secrets.HOST_IP }} "sudo .github/scripts/run_server_docker_stop.sh"

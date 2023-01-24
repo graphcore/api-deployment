@@ -1,0 +1,55 @@
+# Copyright (c) 2023 Graphcore Ltd. All rights reserved.
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: one-click-deployment
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest]
+    outputs:
+      payload: ${{ steps.build.outputs.payload }} # Output the payload/artifact path for other jobs.
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Build payload
+        id: build
+        run: |
+          echo "Building the artifact..."
+          export PAYLOAD=remote_payload_$(date '+%Y-%m-%d_%H%M%S').tar.gz
+          echo "payload=$PAYLOAD" >> $GITHUB_OUTPUT
+          touch $PAYLOAD
+          sudo tar --exclude=$PAYLOAD -czvf $PAYLOAD .
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.build.outputs.payload }}
+          path: ${{ steps.build.outputs.payload }}
+
+  deploy:
+    environment: GCore-deployment-demo
+    runs-on: [ubuntu-latest]
+    needs: build
+    steps:
+      - uses: actions/checkout@v3 # Necessary to access local action
+      - id: create-ssh-key
+        uses: ./.github/actions/ssh
+        with:
+          host-ip: ${{ secrets.HOST_IP }}
+          ssh-key: ${{ secrets.SSH_KEY }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build.outputs.payload }}
+      - name: Start deploying
+        run: |
+          cat ${{ env.ENV_FILE }} >> $GITHUB_ENV
+          SSH_KEY_PATH=${{ steps.create-ssh-key.outputs.key-path}}
+          PAYLOAD=${{ needs.build.outputs.payload }}
+          echo "Deploying the payload ${PAYLOAD}"
+          scp -i $SSH_KEY_PATH ${PAYLOAD} ${{ secrets.USER }}@${{ secrets.HOST_IP }}:~/
+          ssh -i $SSH_KEY_PATH ${{ secrets.USER }}@${{ secrets.HOST_IP }} "tar -xvf ${PAYLOAD} &&  sudo .github/scripts/run_server_docker_start.sh"

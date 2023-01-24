@@ -1,0 +1,4 @@
+__pycache__/
+.pytest_cache/
+exe_cache/
+*.tar.gz

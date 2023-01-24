@@ -1,0 +1,7 @@
+fastapi
+git+https://github.com/huggingface/optimum-graphcore.git@4e40c5a7cad62c86c40f3ef2ce22f27fd1c30d21
+uvicorn
+numpy
+pyyaml
+tokenizers===0.11.1
+pydantic[dotenv]
