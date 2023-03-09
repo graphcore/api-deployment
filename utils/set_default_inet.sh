@@ -16,7 +16,8 @@ DEFAULT_INET=$(ifconfig $DEFAULT_IFACE | grep " inet " | head -1 | awk '{print $
 else
 echo "Using ip"
 DEFAULT_IFACE=$(ip route show | grep default | head -1 | awk '{print $5}')
-DEFAULT_INET=$(ip route show | grep -v default | grep " ${DEFAULT_IFACE} " | head -1 | awk '{print $NF}')
+DEFAULT_INET=$(ip route show | grep -v default | grep " ${DEFAULT_IFACE} "| grep -o -E 'src [^ ]+' | sed 's/src //' | head -1 | awk '{print $NF}')
+
 fi
 
 # These strings are checked for by the tests.

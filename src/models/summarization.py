@@ -16,7 +16,7 @@ class SummarizationPipeline:
             ipu_config=ipu_config.to_dict(),
             config="facebook/bart-large-cnn",
             num_beams=3,
-            input_max_length=500,
+            max_input_length=500,
             truncation=True,
             max_length=100,
         )
@@ -33,4 +33,3 @@ def compile(pipe: SummarizationPipeline):
 
 
 pipe = SummarizationPipeline()
-compile(pipe)
