@@ -1,6 +1,6 @@
-fastapi
-git+https://github.com/huggingface/optimum-graphcore.git
-uvicorn
-pyyaml
+fastapi==0.95.0
+git+https://github.com/huggingface/optimum-graphcore.git@d96f8ce#egg=optimum-graphcore
+uvicorn==0.21.1
+pyyaml==6.0
 tokenizers===0.11.1
-pydantic[dotenv]
+pydantic[dotenv]==1.10.7

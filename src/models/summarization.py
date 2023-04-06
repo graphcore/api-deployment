@@ -3,11 +3,13 @@ from optimum.graphcore import IPUConfig
 from optimum.graphcore import pipeline
 
 ipu_config = IPUConfig(
-    layers_per_ipu=[24], matmul_proportion=0.15, executable_cache_dir="./exe_cache"
+    layers_per_ipu=[12, 12],
+    matmul_proportion=0.15,
+    executable_cache_dir="./exe_cache",
 )
 
 
-class SummarizationPipeline:
+class Pipeline:
     def __init__(self):
         self.summarization_pipeline = pipeline(
             "summarization",
@@ -26,10 +28,8 @@ class SummarizationPipeline:
         result = self.summarization_pipeline(input_str, truncation="only_first")
         return {"summary": result}
 
-
-def compile(pipe: SummarizationPipeline):
-    pipe({"documents": "Just compile"})
-    return
-
-
-pipe = SummarizationPipeline()
+    def compile(self):
+        # Model is compiled on the first call
+        dummy_inputs_dict = {"documents": "Just compile"}
+        self(dummy_inputs_dict)
+        return

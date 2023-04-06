@@ -7,9 +7,5 @@ class Pipeline:
         time.sleep(0.001)
         return inputs
 
-
-def compile(pipe: Pipeline):
-    return
-
-
-pipe = Pipeline()
+    def compile(self):
+        return

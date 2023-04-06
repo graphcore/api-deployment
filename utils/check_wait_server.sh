@@ -34,19 +34,44 @@ fi
 
 echo "Server expected at ${DEFAULT_INET}:${SERVER_PORT}"
 
-echo "Waiting for server ready"
-
 WAIT_TIME=0
 
 while true; do
-  CHECK=$(curl $DEFAULT_INET:$SERVER_PORT 2> /dev/null)
-  READY=$(echo $CHECK | grep "Health Check Passed!" | wc -l)
-
-  if [ "$READY" -gt 0 ]
+  STATUS=$(curl -L -s -o /dev/null -w "%{http_code}" $DEFAULT_INET:$SERVER_PORT/health/startup)
+  if [ "$STATUS" -eq 200 ]
   then
-    echo "Ready"
+    echo "Server started"
+    break
+  fi
+
+  if [ "$WAIT_TIME" -gt $SERVER_WAIT_TIMEOUT ]
+  then
+    echo " Timeout"
+    exit 124
+  fi
+
+  sleep 1
+  WAIT_TIME=$((WAIT_TIME + 5))
+
+done
+
+echo "Waiting for server ready"
+
+while true; do
+  STATUS=$(curl -L -s -o /dev/null -w "%{http_code}" $DEFAULT_INET:$SERVER_PORT/health/readiness)
+  ALIVE=$(curl -L -s -o /dev/null -w "%{http_code}" $DEFAULT_INET:$SERVER_PORT/health/liveness)
+  if [ "$STATUS" -eq 200 ]
+  then
+    echo " READY."
     echo "SERVER : ${DEFAULT_INET}:${SERVER_PORT}"
     exit 0
+  fi
+
+  if [ ! "$ALIVE" -eq 200 ]
+  then
+    echo "Server liveness check failed: Unrocoverable error"
+    echo "SERVER : ${DEFAULT_INET}:${SERVER_PORT}"
+    exit 1
   fi
 
   if [ "$WAIT_TIME" -gt $SERVER_WAIT_TIMEOUT ]
@@ -57,4 +82,5 @@ while true; do
 
   sleep 5
   WAIT_TIME=$((WAIT_TIME + 5))
+  echo -n "." # improving the user experience while waiting for server to be ready
 done

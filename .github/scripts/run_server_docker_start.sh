@@ -45,7 +45,11 @@ echo "Docker status (after)"
 docker image ls | grep --color "${DOCKER_IMAGE_NAME}\|$"
 docker ps | grep --color "${DOCKER_IMAGE_NAME}\|$"
 
-# DOCKER_ID=$(docker ps -aqf "name=${COMPOSE_PROJECT_NAME}")
-# echo $DOCKER_ID
+
 # Wait for server
 ./utils/check_wait_server.sh
+RUN_RESULT=$?
+if [ $RUN_RESULT -ne 0 ]; then
+    docker logs ${COMPOSE_PROJECT_NAME}
+    exit $RUN_RESULT
+fi
