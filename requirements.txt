@@ -1,4 +1,4 @@
-fastapi==0.95.0
+fastapi==0.109.1
 git+https://github.com/huggingface/optimum-graphcore.git@d96f8ce#egg=optimum-graphcore
 uvicorn==0.21.1
 pyyaml==6.0
